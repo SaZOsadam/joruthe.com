@@ -4,14 +4,16 @@ import Logo from '../assets/images/logo.png';
 import background1 from '../assets/images/background1.jpg';
 import background2 from '../assets/images/background2.jpg';
 import background3 from '../assets/images/background3.jpg';
-import Plumbing2 from '../assets/images/Plumbing2.jpg';
+import background5 from '../assets/images/background5.jpg';
+import background4 from '../assets/images/background4.jpg';
+
 
 const Header = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth > 768);
 
-  const images = [background1, background2, background3, Plumbing2];
+  const images = [background1, background2, background3, background5, background4];
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Facebook, Twitter, Instagram } from 'lucide-react';
 import profileImage from '../assets/images/profile.jpg';
 import profile2Image from '../assets/images/profile21.jpg';
+
 const AboutUs = () => {
   const [showFullTeam, setShowFullTeam] = useState(false);
 
@@ -59,13 +60,13 @@ const AboutUs = () => {
         <div className="text-center">
           <h4 className="text-2xl font-light mb-4 text-primary">Connect With Us</h4>
           <div className="flex justify-center space-x-4">
-            <a href="#" className="text-primary hover:text-secondary transition duration-300" aria-label="Facebook">
+            <a href="#top" className="text-primary hover:text-secondary transition duration-300" aria-label="Facebook">
               <Facebook size={24} />
             </a>
-            <a href="#" className="text-primary hover:text-secondary transition duration-300" aria-label="Twitter">
+            <a href="#top" className="text-primary hover:text-secondary transition duration-300" aria-label="Twitter">
               <Twitter size={24} />
             </a>
-            <a href="#" className="text-primary hover:text-secondary transition duration-300" aria-label="Instagram">
+            <a href="#top" className="text-primary hover:text-secondary transition duration-300" aria-label="Instagram">
               <Instagram size={24} />
             </a>
           </div>

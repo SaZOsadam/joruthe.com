@@ -15,6 +15,7 @@ import LawnCare1 from '../assets/images/LawnCare1.jpg';
 import LawnCare2 from '../assets/images/LawnCare2.jpg';
 import Landscaping1 from '../assets/images/Landscaping1.jpg';
 import Landscaping2 from '../assets/images/Landscaping2.jpg';
+import Landscaping3 from '../assets/images/Landscaping3.jpg';
 import Fencing1 from '../assets/images/Fencing1.jpg';
 import Fencing2 from '../assets/images/Fencing3.jpg';
 import Fencing3 from '../assets/images/Fencing3.jpg';
@@ -89,7 +90,7 @@ const Services = () => {
     {
       title: 'Landscaping',
       description: 'Creative landscaping solutions to enhance your outdoor spaces.',
-      images: [Landscaping1, Landscaping2]
+      images: [Landscaping1, Landscaping2, Landscaping3]
     
     },
     {

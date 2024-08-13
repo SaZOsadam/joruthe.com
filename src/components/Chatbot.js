@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, X, Send, Loader } from 'lucide-react';
-import OpenAI from "openai";
+import { MessageSquare, X, Send, Loader, Trash2 } from 'lucide-react';
 
-const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_Ruthie_KEY,
-  organization: "org-kGmhBOd9GfYSIiSPmEg1Aus8",
-  dangerouslyAllowBrowser: true // Only use this for client-side applications
-});
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,9 +9,10 @@ const Chatbot = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    const storedMessages = localStorage.getItem('ruthieChatMessages');
+    const storedMessages = localStorage.getItem('chatMessages');
     if (storedMessages) {
       setMessages(JSON.parse(storedMessages));
     } else {
@@ -25,12 +21,17 @@ const Chatbot = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('ruthieChatMessages', JSON.stringify(messages));
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
   }, [messages]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
   const handleInputChange = (e) => setInputMessage(e.target.value);
+
+  const clearChat = () => {
+    setMessages([{ text: "Hi, I'm Ruthie. How can I assist you today?", isBot: true }]);
+    localStorage.removeItem('chatMessages');
+  };
 
   const handleSendMessage = async () => {
     if (inputMessage.trim() === '') return;
@@ -40,35 +41,32 @@ const Chatbot = () => {
     setInputMessage('');
     setIsLoading(true);
     setError(null);
+    setIsTyping(true);
 
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are Ruthie, a helpful assistant for Joruthe LLC, a home repair and renovation company. Provide friendly and informative responses about their services including plumbing, electrical work, carpentry, renovation, lawn care, landscaping, and fencing."
-          },
-          ...messages.map(msg => ({
-            role: msg.isBot ? "assistant" : "user",
-            content: msg.text
-          })),
-          { role: "user", content: inputMessage }
-        ],
+      const response = await fetch(`${API_BASE_URL}/api/chatbot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: inputMessage, messages }),
       });
 
-      const botResponse = response.choices[0].message.content.trim();
-      setMessages(prev => [...prev, { text: botResponse, isBot: true }]);
-    } catch (error) {
-      console.error('Error calling OpenAI API:', error);
-      setError('Sorry, I encountered an error. Please try again later.');
-      if (error.response) {
-        console.error(error.response.status, error.response.data);
-        setError(`Error ${error.response.status}: ${error.response.data.error.message}`);
-      } else {
-        console.error('Error', error.message);
-        setError(`Error: ${error.message}`);
+      if (!response.ok) {
+        const textResponse = await response.text();
+        console.error('Server response:', textResponse);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${textResponse.slice(0, 200)}...`);
       }
+
+      const data = await response.json();
+      setTimeout(() => {
+        setMessages(prev => [...prev, { text: data.botResponse, isBot: true }]);
+        setIsTyping(false);
+      }, 500); // Simulate typing delay
+    } catch (error) {
+      console.error('Error calling chatbot API:', error);
+      setError(`Error: ${error.message}`);
+      setIsTyping(false);
     } finally {
       setIsLoading(false);
     }
@@ -85,12 +83,17 @@ const Chatbot = () => {
           <MessageSquare size={24} />
         </button>
       ) : (
-        <div className="bg-white rounded-lg shadow-xl w-80 h-96 flex flex-col">
+        <div className="bg-white rounded-lg shadow-xl w-80 sm:w-96 h-[32rem] flex flex-col">
           <div className="bg-primary text-white p-4 flex justify-between items-center rounded-t-lg">
             <h3 className="font-semibold">Chat with Ruthie</h3>
-            <button onClick={toggleChat} aria-label="Close chat">
-              <X size={20} />
-            </button>
+            <div className="flex items-center">
+              <button onClick={clearChat} className="mr-2 hover:text-gray-300" aria-label="Clear chat">
+                <Trash2 size={20} />
+              </button>
+              <button onClick={toggleChat} className="hover:text-gray-300" aria-label="Close chat">
+                <X size={20} />
+              </button>
+            </div>
           </div>
           <div className="flex-grow p-4 overflow-y-auto">
             {messages.map((message, index) => (
@@ -100,10 +103,11 @@ const Chatbot = () => {
                 </span>
               </div>
             ))}
-            {isLoading && (
-              <div className="text-center">
-                <Loader className="animate-spin inline-block" size={24} />
-                <p>Ruthie is thinking...</p>
+            {isTyping && (
+              <div className="text-left">
+                <span className="inline-block p-2 rounded-lg bg-gray-200">
+                  Ruthie is typing...
+                </span>
               </div>
             )}
             {error && (
@@ -123,11 +127,11 @@ const Chatbot = () => {
             />
             <button
               onClick={handleSendMessage}
-              className="bg-primary text-white p-2 rounded-r-md hover:bg-primary-dark transition duration-300"
+              className="bg-primary text-white p-2 rounded-r-md hover:bg-primary-dark transition duration-300 disabled:opacity-50"
               aria-label="Send message to Ruthie"
-              disabled={isLoading}
+              disabled={isLoading || isTyping}
             >
-              <Send size={20} />
+              {isLoading ? <Loader className="animate-spin" size={20} /> : <Send size={20} />}
             </button>
           </div>
         </div>
